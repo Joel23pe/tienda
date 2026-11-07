@@ -18,7 +18,7 @@ import org.springframework.security.web.servlet.util.matcher.PathPatternRequestM
 
 /**
  * CAPÍTULO 3 - 3.1 / 4.1 CONFIGURACIÓN DE SPRING SECURITY (SecurityFilterChain)
- *  - Rutas públicas:   /api/auth/** (login y registro) y la consola H2
+ *  - Rutas públicas:   /api/auth/** (login y registro), la consola H2 y la documentación Swagger
  *  - Solo ADMIN:       cualquier DELETE
  *  - Resto de rutas:   requieren token JWT válido
  *  - Sesión STATELESS: no se guarda sesión en el servidor; cada petición trae su token.
@@ -42,6 +42,9 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(PathPatternRequestMatcher.withDefaults().matcher("/h2-console/**")).permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
+                // Swagger / OpenAPI: la interfaz y el JSON de la documentación son públicos;
+                // los endpoints de la API siguen exigiendo token (botón Authorize)
+                .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .requestMatchers(HttpMethod.DELETE, "/api/**").hasRole("ADMIN")
                 .anyRequest().authenticated())
             // Sin token -> 401 Unauthorized; con token pero sin permiso -> 403 Forbidden

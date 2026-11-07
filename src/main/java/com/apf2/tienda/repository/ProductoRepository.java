@@ -1,18 +1,27 @@
 package com.apf2.tienda.repository;
 
 import com.apf2.tienda.model.Producto;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * CAPÍTULO 1 - 1.3 REPOSITORIOS  +  CAPÍTULO 2 - 2.1 CONSULTAS CON JPQL
  * JPQL trabaja con clases y atributos Java (Producto, p.nombre), NO con tablas/columnas SQL.
  */
 public interface ProductoRepository extends JpaRepository<Producto, Long> {
+
+    // CONCURRENCIA: bloqueo pesimista de escritura (SELECT ... FOR UPDATE en PostgreSQL).
+    // Otra transacción que intente bloquear la misma fila espera hasta que esta termine.
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT p FROM Producto p WHERE p.id = :id")
+    Optional<Producto> findByIdForUpdate(@Param("id") Long id);
 
     // JPQL #1: filtra por la relación @ManyToOne y ordena por nombre
     @Query("SELECT p FROM Producto p WHERE p.categoria.id = :categoriaId ORDER BY p.nombre")
